@@ -1,7 +1,7 @@
 #ifndef INSTRUCTION_h
 #define INSTRUCTION_h
 
-#include "Env.h"
+#include "CPU.h"
 #include <cstdio>
 #include <map>
 
@@ -17,7 +17,7 @@ public:
     static std::map<int,int> Totype;
     static std::map<int,int> buildMap();
     int code;
-    virtual void run(Env *env) = 0;
+    virtual void run(CPU *cpu) = 0;
     virtual void print() = 0;
 };
 
@@ -26,7 +26,7 @@ public:
     int opcode, rs, rt, rd, C, funct;
     Inst_R();
     Inst_R(int code);
-    void run(Env *env);
+    void run(CPU *cpu);
     void print();
 };
 
@@ -35,7 +35,7 @@ public:
     int opcode, rs, rt, C;
     Inst_I();
     Inst_I(int code);
-    void run(Env *env);
+    void run(CPU *cpu);
     void print();
 };
 
@@ -44,7 +44,7 @@ public:
     int opcode, C;
     Inst_J();
     Inst_J(int code);
-    void run(Env *env);
+    void run(CPU *cpu);
     void print();
 };
 
@@ -53,7 +53,7 @@ public:
     int opcode;
     Inst_S();
     Inst_S(int code);
-    void run(Env *env);
+    void run(CPU *cpu);
     void print();
 };
 

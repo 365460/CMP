@@ -1,24 +1,35 @@
 GCC:= g++
 Flag:= -std=c++11
 
-main: main.cpp Error.o Env.o Inst.o IM.o
-	$(GCC) $(Flag) Error.o Env.o Inst.o IM.o main.cpp -o single_cycle.exe
+main: main.cpp CPU.o Inst.o
+	$(GCC) $(Flag) CPU.o Error.o Inst.o DS.o Cache.o Mem.o PGT.o TLB.o main.cpp -o CMP.exe
 
 Error.o: Error.cpp Error.h
 	$(GCC) $(Flag) -c Error.cpp -o Error.o
 
-Env.o: Env.cpp Env.h Error.o
-	$(GCC) $(Flag) -c Env.cpp -o Env.o
+CPU.o: CPU.cpp CPU.h Error.o DS.o
+	$(GCC) $(Flag) -c CPU.cpp -o CPU.o
 
-Inst.o: Instruction.h Instruction.cpp Env.o Error.o
+Inst.o: Instruction.h Instruction.cpp CPU.o Error.o
 	$(GCC) $(Flag) -c Instruction.cpp -o Inst.o
 
-IM.o: IMemory.h IMemory.cpp Inst.o Error.o
-	$(GCC) $(Flag) -c IMemory.cpp -o IM.o
+DS.o: Cache.o Mem.o PGT.o TLB.o DataSystem.cpp DataSystem.h
+	$(GCC) $(Flag) -c DataSystem.cpp -o DS.o
 
+Cache.o: Cache.h Cache.cpp
+	$(GCC) $(Flag) -c Cache.cpp -o Cache.o
+
+Mem.o: Memory.cpp Memory.h
+	$(GCC) $(Flag) -c Memory.cpp -o Mem.o
+
+PGT.o: PGT.h PGT.cpp
+	$(GCC) $(Flag) -c PGT.cpp -o PGT.o
+
+TLB.o: TLB.h TLB.cpp
+	$(GCC) $(Flag) -c TLB.cpp -o TLB.o
 
 run:main
-	single_cycle.exe
+	CMP.exe
 
 clean:
-	rm *.o
+	del *.o CMP.exe *.rpt

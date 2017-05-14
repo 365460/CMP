@@ -2,10 +2,10 @@
 #include <map>
 #include <iostream>
 
-int ADD(int a,int b,Env *env){
+int ADD(int a,int b,CPU *cpu){
     int c = a+b;
-    if(a<0 && b<0 && c>=0) env->err.addError(NumOverF);
-    if(a>0 && b>0 && c<=0) env->err.addError(NumOverF);
+    if(a<0 && b<0 && c>=0) cpu->err.addError(NumOverF);
+    if(a>0 && b>0 && c<=0) cpu->err.addError(NumOverF);
 
     return c;
 }
@@ -63,92 +63,92 @@ Inst_R::Inst_R(int code){
     funct = getCode(code, 0, 5);
 }
 
-void Inst_R::run(Env *env){
+void Inst_R::run(CPU *cpu){
     if(funct==0x20){ // add
-        if(rd==0) env->err.addError(WriteTo0);
-        int c = ADD(env->reg[rs], env->reg[rt], env);
-        env->setReg(rd, c);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        int c = ADD(cpu->reg[rs], cpu->reg[rt], cpu);
+        cpu->setReg(rd, c);
     }
     else if(funct==0x21){ //addu
-        if(rd==0) env->err.addError(WriteTo0);
-        int a = env->reg[rs], b = env->reg[rt], c= a+b;
-        env->setReg(rd, c);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        int a = cpu->reg[rs], b = cpu->reg[rt], c= a+b;
+        cpu->setReg(rd, c);
     }
     else if(funct==0x22){ //sub
-        if(rd==0) env->err.addError(WriteTo0);
-        int c = ADD(env->reg[rs], -env->reg[rt], env);
-        env->setReg(rd, c);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        int c = ADD(cpu->reg[rs], -cpu->reg[rt], cpu);
+        cpu->setReg(rd, c);
     }
     else if(funct==0x24){ // and
-        if(rd==0) env->err.addError(WriteTo0);
-        env->setReg(rd, env->reg[rs]&env->reg[rt]);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        cpu->setReg(rd, cpu->reg[rs]&cpu->reg[rt]);
     }
     else if(funct==0x25){ // or
-        if(rd==0) env->err.addError(WriteTo0);
-        env->setReg(rd, env->reg[rs]|env->reg[rt]);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        cpu->setReg(rd, cpu->reg[rs]|cpu->reg[rt]);
     }
     else if(funct==0x26){ // xor
-        if(rd==0) env->err.addError(WriteTo0);
-        env->setReg(rd, env->reg[rs]^env->reg[rt]);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        cpu->setReg(rd, cpu->reg[rs]^cpu->reg[rt]);
     }
     else if(funct==0x27){ // nor
-        if(rd==0) env->err.addError(WriteTo0);
-        env->setReg(rd, ~(env->reg[rs] | env->reg[rt]) );
+        if(rd==0) cpu->err.addError(WriteTo0);
+        cpu->setReg(rd, ~(cpu->reg[rs] | cpu->reg[rt]) );
     }
     else if(funct==0x28){ // nand
-        if(rd==0) env->err.addError(WriteTo0);
-        env->setReg(rd, ~(env->reg[rs] & env->reg[rt]) );
+        if(rd==0) cpu->err.addError(WriteTo0);
+        cpu->setReg(rd, ~(cpu->reg[rs] & cpu->reg[rt]) );
     }
     else if(funct==0x2A){ // slt
-        if(rd==0) env->err.addError(WriteTo0);
-        bool v = env->reg[rs] < env->reg[rt];
-        env->setReg(rd, v);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        bool v = cpu->reg[rs] < cpu->reg[rt];
+        cpu->setReg(rd, v);
     }
     else if(funct==0x00){ // sll
-        if( !(rd==0 && rt==0 && C==0) && rd==0) env->err.addError(WriteTo0);
-        env->setReg(rd, env->reg[rt]<<C);
+        if( !(rd==0 && rt==0 && C==0) && rd==0) cpu->err.addError(WriteTo0);
+        cpu->setReg(rd, cpu->reg[rt]<<C);
     }
     else if(funct==0x02){ // srl
-        if(rd==0) env->err.addError(WriteTo0);
-        env->setReg(rd, (unsigned)env->reg[rt]>>C);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        cpu->setReg(rd, (unsigned)cpu->reg[rt]>>C);
     }
     else if(funct==0x03){ // sra
-        if(rd==0) env->err.addError(WriteTo0);
-        env->setReg(rd, env->reg[rt]>>C);
+        if(rd==0) cpu->err.addError(WriteTo0);
+        cpu->setReg(rd, cpu->reg[rt]>>C);
     }
     else if(funct==0x08){ // jr
-        env->PC =  env->reg[rs];
+        cpu->PC =  cpu->reg[rs];
     }
     else if(funct==0x18){ // muti
-        if(!env->hadgethi)  env->err.addError(OverWriteHI);
-        env->hadgethi = false;
+        if(!cpu->hadgethi)  cpu->err.addError(OverWriteHI);
+        cpu->hadgethi = false;
 
-        long long ans = (long long)env->reg[rs] *
-                        (long long)env->reg[rt];
+        long long ans = (long long)cpu->reg[rs] *
+                        (long long)cpu->reg[rt];
         int hi = ans>>32,  lo = ans & 0x00000000FFFFFFFF;
-        env->setReg(32, hi);
-        env->setReg(33, lo);
+        cpu->setReg(32, hi);
+        cpu->setReg(33, lo);
     }
     else if(funct==0x19){ //multu
-        if(!env->hadgethi)  env->err.addError(OverWriteHI);
-        env->hadgethi = false;
+        if(!cpu->hadgethi)  cpu->err.addError(OverWriteHI);
+        cpu->hadgethi = false;
 
-        unsigned long long ans = (unsigned long long)(unsigned)env->reg[rs] *
-                        (unsigned long long)(unsigned)env->reg[rt];
+        unsigned long long ans = (unsigned long long)(unsigned)cpu->reg[rs] *
+                        (unsigned long long)(unsigned)cpu->reg[rt];
         int hi = ans>>32,  lo = ans & 0x00000000FFFFFFFF;
-        env->setReg(32, hi);
-        env->setReg(33, lo);
+        cpu->setReg(32, hi);
+        cpu->setReg(33, lo);
 
     }
     else if(funct==0x10){ //mfhi
-        env->hadgethi = true;
-        if(rd==0) env->err.addError(WriteTo0);
-        else env->setReg(rd, env->reg[32]);
+        cpu->hadgethi = true;
+        if(rd==0) cpu->err.addError(WriteTo0);
+        else cpu->setReg(rd, cpu->reg[32]);
     }
     else if(funct==0x12){ // mflo
-        env->hadgethi = true;
-        if(rd==0) env->err.addError(WriteTo0);
-        else env->setReg(rd, env->reg[33]);
+        cpu->hadgethi = true;
+        if(rd==0) cpu->err.addError(WriteTo0);
+        else cpu->setReg(rd, cpu->reg[33]);
     }
     else throw Error("Unknown instruction");
 }
@@ -168,101 +168,101 @@ Inst_I::Inst_I(int code){
     C = code<<16>>16;
 }
 
-void Inst_I::run(Env *env){
+void Inst_I::run(CPU *cpu){
 
     if(opcode==0x08){ // addi
-        if(rt==0) env->err.addError(WriteTo0);
-        int c = ADD(env->reg[rs], C, env);
+        if(rt==0) cpu->err.addError(WriteTo0);
+        int c = ADD(cpu->reg[rs], C, cpu);
 
-        env->setReg(rt, c);
+        cpu->setReg(rt, c);
     }
     else if(opcode==0x09){ // addiu
-        if(rt==0) env->err.addError(WriteTo0);
-        else env->setReg(rt, env->reg[rs] + C);
+        if(rt==0) cpu->err.addError(WriteTo0);
+        else cpu->setReg(rt, cpu->reg[rs] + C);
     }
     else if(opcode==0x23){ // lw
-        if(rt==0) env->err.addError(WriteTo0);
+        if(rt==0) cpu->err.addError(WriteTo0);
 
-        unsigned int address = ADD(env->reg[rs],C,env);
-        if(address>1020) env->err.addError(MemAddOverF);
-        if(address%4!=0) env->err.addError(DataMisaligned);
-        if(env->err.halt) return;
+        unsigned int address = ADD(cpu->reg[rs],C,cpu);
+        if(address>1020) cpu->err.addError(MemAddOverF);
+        if(address%4!=0) cpu->err.addError(DataMisaligned);
+        if(cpu->err.halt) return;
 
-        env->setReg(rt, env->memory[address/4] );
+        cpu->setReg(rt, cpu->memory[address/4] );
     }
     else if(opcode==0x21){ // lh
-        if(rt==0)  env->err.addError(WriteTo0);
+        if(rt==0)  cpu->err.addError(WriteTo0);
 
-        unsigned int address = ADD(env->reg[rs],C,env);
-        if(address>1022) env->err.addError(MemAddOverF);
-        if(address%2!=0) env->err.addError(DataMisaligned);
-        if(env->err.halt) return;
+        unsigned int address = ADD(cpu->reg[rs],C,cpu);
+        if(address>1022) cpu->err.addError(MemAddOverF);
+        if(address%2!=0) cpu->err.addError(DataMisaligned);
+        if(cpu->err.halt) return;
 
-        int value = env->memory[ address/4 ];
+        int value = cpu->memory[ address/4 ];
         if(address%4==0) value = value>>16; // front
         else value = value << 16 >> 16;
-        env->setReg(rt, value );
+        cpu->setReg(rt, value );
     }
     else if(opcode==0x25){ // lhu
-        if(rt==0) env->err.addError(WriteTo0);
+        if(rt==0) cpu->err.addError(WriteTo0);
 
-        unsigned int address = ADD(env->reg[rs],C,env);
-        if(address>1022) env->err.addError(MemAddOverF);
-        if(address%2!=0) env->err.addError(DataMisaligned);
-        if(env->err.halt) return;
+        unsigned int address = ADD(cpu->reg[rs],C,cpu);
+        if(address>1022) cpu->err.addError(MemAddOverF);
+        if(address%2!=0) cpu->err.addError(DataMisaligned);
+        if(cpu->err.halt) return;
 
-        int value = env->memory[ address/4 ];
+        int value = cpu->memory[ address/4 ];
         if(address%4==0) value = (unsigned)value>>16; // front
         else value = (unsigned)value << 16 >> 16;
-        env->setReg(rt, value );
+        cpu->setReg(rt, value );
     }
     else if(opcode==0x20){ //lb
-        if(rt==0) env->err.addError(WriteTo0);
+        if(rt==0) cpu->err.addError(WriteTo0);
 
-        unsigned int address = ADD(env->reg[rs],  C, env);
-        if(address>1023) env->err.addError(MemAddOverF);
-        if(env->err.halt) return;
+        unsigned int address = ADD(cpu->reg[rs],  C, cpu);
+        if(address>1023) cpu->err.addError(MemAddOverF);
+        if(cpu->err.halt) return;
 
-        int value = env->memory[address/4];
+        int value = cpu->memory[address/4];
         if(address%4==0) value = value>>24;
         else if(address%4==1) value = value<<8>>24;
         else if(address%4==2) value = value<<16>>24;
         else value = value<<24>>24;
 
-        env->setReg(rt, value);
+        cpu->setReg(rt, value);
     }
     else if(opcode==0x24){ //lbu
-        if(rt==0) env->err.addError(WriteTo0);
+        if(rt==0) cpu->err.addError(WriteTo0);
 
-        unsigned int address = ADD(env->reg[rs] , C ,env);
-        if(address>1023) env->err.addError(MemAddOverF);
-        if(env->err.halt) return;
+        unsigned int address = ADD(cpu->reg[rs] , C ,cpu);
+        if(address>1023) cpu->err.addError(MemAddOverF);
+        if(cpu->err.halt) return;
 
-        int value = env->memory[address/4];
+        int value = cpu->memory[address/4];
         if(address%4==0) value = (unsigned)value>>24;
         else if(address%4==1) value = (unsigned)value<<8>>24;
         else if(address%4==2) value = (unsigned)value<<16>>24;
         else value = (unsigned)value<<24>>24;
 
-        env->setReg(rt, value);
+        cpu->setReg(rt, value);
     }
     else if(opcode==0x2B){ //sw
-        unsigned int address = ADD(env->reg[rs],C,env);
-        if(address>1020) env->err.addError(MemAddOverF);
-        if(address%4!=0) env->err.addError(DataMisaligned);
-        if(env->err.halt) return;
+        unsigned int address = ADD(cpu->reg[rs],C,cpu);
+        if(address>1020) cpu->err.addError(MemAddOverF);
+        if(address%4!=0) cpu->err.addError(DataMisaligned);
+        if(cpu->err.halt) return;
 
-        unsigned int value = env->reg[rt];
-        env->memory[address/4] = value;
+        unsigned int value = cpu->reg[rt];
+        cpu->memory[address/4] = value;
     }
     else if(opcode==0x29){ //sh
-        unsigned int address = ADD(env->reg[rs],C, env);
-        if(address>1022) env->err.addError(MemAddOverF);
-        if(address%2!=0) env->err.addError(DataMisaligned);
-        if(env->err.halt) return;
+        unsigned int address = ADD(cpu->reg[rs],C, cpu);
+        if(address>1022) cpu->err.addError(MemAddOverF);
+        if(address%2!=0) cpu->err.addError(DataMisaligned);
+        if(cpu->err.halt) return;
 
-        unsigned int value = env->reg[rt] & 0x0000FFFF;
-        unsigned int now = env->memory[address/4];
+        unsigned int value = cpu->reg[rt] & 0x0000FFFF;
+        unsigned int now = cpu->memory[address/4];
         if(address%4==0){
             now = now<<16>>16;
             now |= value<<16;
@@ -271,63 +271,63 @@ void Inst_I::run(Env *env){
             now = now>>16<<16;
             now |= value;
         }
-        env->memory[address/4] = now;
+        cpu->memory[address/4] = now;
     }
     else if(opcode==0x28){ //sb
-        unsigned int address = ADD(env->reg[rs],C, env);
-        if(address>1023) env->err.addError(MemAddOverF);
-        if(env->err.halt) return;
+        unsigned int address = ADD(cpu->reg[rs],C, cpu);
+        if(address>1023) cpu->err.addError(MemAddOverF);
+        if(cpu->err.halt) return;
 
-        unsigned int value = (unsigned) env->reg[rt] & 0x000000FF;
-        unsigned int now = env->memory[address/4];
+        unsigned int value = (unsigned) cpu->reg[rt] & 0x000000FF;
+        unsigned int now = cpu->memory[address/4];
         int index = address%4, start = (4-index-1)*8;
         for(int i=0; i<8; i++, start++){
             if((value>>i)&1 && !((now>>start)&1)) now |= (1<<(start));
             else if( !((value>>i)&1) && (now>>start)&1) now ^= (1<<(start));
         }
-        env->memory[address/4] = now;
+        cpu->memory[address/4] = now;
     }
     else if(opcode==0x0F){ //lui
-        if(rt==0) env->err.addError(WriteTo0);
+        if(rt==0) cpu->err.addError(WriteTo0);
         int result = C<<16;
-        env->setReg(rt, result);
+        cpu->setReg(rt, result);
     }
     else if(opcode==0x0C){ //andi
-        if(rt==0) env->err.addError(WriteTo0);
+        if(rt==0) cpu->err.addError(WriteTo0);
         int cc = (unsigned) C<<16>>16;
-        int result = env->reg[rs]&cc;
-        env->setReg(rt, result);
+        int result = cpu->reg[rs]&cc;
+        cpu->setReg(rt, result);
     }
     else if(opcode==0x0D){ //ori
-        if(rt==0) env->err.addError(WriteTo0);
+        if(rt==0) cpu->err.addError(WriteTo0);
         int cc = (unsigned) C<<16>>16;
-        int result = env->reg[rs]|cc;
-        env->setReg(rt, result);
+        int result = cpu->reg[rs]|cc;
+        cpu->setReg(rt, result);
     }
     else if(opcode==0x0E){ //nori
-        if(rt==0) env->err.addError(WriteTo0);
+        if(rt==0) cpu->err.addError(WriteTo0);
         int cc = (unsigned) C<<16>>16;
-        int result = ~(env->reg[rs]|cc);
-        env->setReg(rt, result);
+        int result = ~(cpu->reg[rs]|cc);
+        cpu->setReg(rt, result);
     }
     else if(opcode==0x0A){ //slti
-        if(rt==0) env->err.addError(WriteTo0);
-        int result = env->reg[rs] < C;
-        env->setReg(rt, result);
+        if(rt==0) cpu->err.addError(WriteTo0);
+        int result = cpu->reg[rs] < C;
+        cpu->setReg(rt, result);
     }
     else if(opcode==0x04){ //beq
-        if(env->reg[rs]==env->reg[rt]){
-            env->PC = ADD(env->PC, C*4, env);
+        if(cpu->reg[rs]==cpu->reg[rt]){
+            cpu->PC = ADD(cpu->PC, C*4, cpu);
         }
     }
     else if(opcode==0x05){ //bne
-        if(env->reg[rs]!=env->reg[rt]){
-            env->PC = ADD(env->PC, C*4, env);
+        if(cpu->reg[rs]!=cpu->reg[rt]){
+            cpu->PC = ADD(cpu->PC, C*4, cpu);
         }
     }
     else if(opcode==0x07){ //bgtz
-        if(env->reg[rs]>0){
-            env->PC = ADD(env->PC, C*4, env);
+        if(cpu->reg[rs]>0){
+            cpu->PC = ADD(cpu->PC, C*4, cpu);
         }
     }
     else throw Error("Unknown instruction");
@@ -346,13 +346,13 @@ Inst_J::Inst_J(int code){
     C = getCode(code, 0, 25);
 }
 
-void Inst_J::run(Env *env){
+void Inst_J::run(CPU *cpu){
     if(opcode==0x02){ // j
-        env->PC = C*4;
+        cpu->PC = C*4;
     }
     else if(opcode==0x03){ // jal
-        env->setReg(31, env->PC);
-        env->PC = C*4;
+        cpu->setReg(31, cpu->PC);
+        cpu->PC = C*4;
     }
     else throw Error("Unknown instruction");
 }
@@ -370,10 +370,10 @@ Inst_S::Inst_S(int code){
     opcode = getCode(code, 26, 31);
 }
 
-void Inst_S::run(Env *env){
+void Inst_S::run(CPU *cpu){
 
     if(opcode == 0x3F){ // halt
-        env->err.addError(Halt);
+        cpu->err.addError(Halt);
     }
     else throw Error("Unknown instruction");
 }
