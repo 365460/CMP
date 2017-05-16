@@ -4,13 +4,18 @@
 class PGT
 {
     int pageSize;
+    int pageOffset;
     int DiskSize;
     int entries;
-    int pa[300], va[300], valid[300];
+    int numId;
+    int ppn[300], vpn[300], valid[300];
 
 public:
     PGT(int);
     PGT();
-    int get(int address);
+    bool getPa(int,int &);
+    void update(int,int);
+
+    void print();
 };
 #endif

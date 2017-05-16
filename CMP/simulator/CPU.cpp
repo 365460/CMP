@@ -1,9 +1,12 @@
 #include "CPU.h"
+#include <iostream>
+using namespace std;
 
 CPU::CPU(int arg[]){
 
     ferror =  fopen("error_dump.rpt", "w");
     fresult = fopen("snapshot.rpt", "w");
+    freport = fopen("report.rpt", "w");
 
     hadgethi = true;
     halt = false;
@@ -12,23 +15,30 @@ CPU::CPU(int arg[]){
         report.push_back(i);
         reg[i] = 0;
     }
+    for(int i=0; i<10; i++) cout << arg[i] << " "; cout << endl;
+    size[0]      = arg[0], size[1]      = arg[1];
+    pageSize[0]  = arg[2], pageSize[1]  = arg[3];
+    cacheSize[0] = arg[4], cacheSize[1] = arg[7];
+    blockSize[0] = arg[5], blockSize[1] = arg[8];
+    nWay[0]      = arg[6], nWay[1]      = arg[9];
 }
 
 CPU::~CPU(){
     fclose(ferror);
     fclose(fresult);
+    fclose(freport);
 }
 
-void CPU::initData(string memFile, string instFile){
+void CPU::initData(string instFile, string memFile){
     int memory[300], inst[300];
     for(int i=0; i<300; i++) memory[i] = 0;
     for(int i=0; i<300; i++) inst[i] = 0;
 
-    loadMem(memFile, memory);
     loadInst(instFile, inst); // init pc
+    loadMem(memFile, memory);
 
-    this->instDs = new DS(inst);
-    this->dataDs = new DS(memory);
+    this->instDs = new DS(inst,  size[0], pageSize[0], cacheSize[0], blockSize[0], nWay[0]);
+    this->dataDs = new DS(memory,size[1], pageSize[1], cacheSize[1], blockSize[1], nWay[1]);
 }
 
 void CPU::loadMem(string filename, int memory[]){
@@ -115,7 +125,7 @@ void CPU::printPC(){
     fprintf(fresult,"PC: 0x%08X\n", PC);
 }
 
-void CPU::printReport(int cycle){
+void CPU::printSnap(int cycle){
     fprintf(fresult,"cycle %d\n",cycle);
     for(auto i:report){
         if(i==32) fprintf(fresult, "$HI: 0x%08X\n", reg[i]);
@@ -127,7 +137,33 @@ void CPU::printReport(int cycle){
     fprintf(fresult,"\n\n");
 }
 
+void CPU::printError(int cycle){
+    for(auto i: err.message)
+        fprintf(ferror, "In cycle %d: %s\n",cycle, i.c_str());
+    err.message.clear();
+}
 
-void CPU::runCycle(int cycle){
+void CPU::printReport(){
+    fprintf( freport, "ICache :\n");
+    fprintf( freport, "# hits: %u\n", instDs->cachehit );
+    fprintf( freport, "# misses: %u\n\n", instDs->cachemiss );
+    fprintf( freport, "DCache :\n");
+    fprintf( freport, "# hits: %u\n", dataDs->cachehit );
+    fprintf( freport, "# misses: %u\n\n", dataDs->cachemiss );
+    fprintf( freport, "ITLB :\n");
+    fprintf( freport, "# hits: %u\n", instDs->tlbhit );
+    fprintf( freport, "# misses: %u\n\n", instDs->tlbmiss );
+    fprintf( freport, "DTLB :\n");
+    fprintf( freport, "# hits: %u\n", dataDs->tlbhit );
+    fprintf( freport, "# misses: %u\n\n", dataDs->tlbmiss );
+    fprintf( freport, "IPageTable :\n");
+    fprintf( freport, "# hits: %u\n", instDs->pgthit);
+    fprintf( freport, "# misses: %u\n\n", instDs->pgtmiss);
+    fprintf( freport, "DPageTable :\n");
+    fprintf( freport, "# hits: %u\n", dataDs->pgthit);
+    fprintf( freport, "# misses: %u\n\n", dataDs->pgtmiss);
 
+}
+int CPU::fetch(){
+    return instDs->loadData( this->PC );
 }

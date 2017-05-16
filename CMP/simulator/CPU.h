@@ -16,6 +16,7 @@ public:
 
     int memory[233];
     /* Data System*/
+    int size[2], pageSize[2], cacheSize[2], blockSize[2], nWay[2];
     DS *instDs, *dataDs;
 
     /* register */
@@ -26,6 +27,7 @@ public:
     /*  snapshot.rpt */
     FILE *fresult;
     FILE *ferror;
+    FILE *freport;
     std::vector<int> report;
     Error err;
     bool halt;
@@ -33,9 +35,12 @@ public:
     CPU(int arg[]);
     ~CPU();
     void initData(string,string);
-    void runCycle(int);
     void setReg(int address,int code);
-    void printReport(int cycle);
+    int fetch();
+
+    void printSnap(int cycle);
+    void printError(int cycle);
+    void printReport();
     void printPC();
 };
 #endif

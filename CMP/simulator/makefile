@@ -2,7 +2,7 @@ GCC:= g++
 Flag:= -std=c++11
 
 main: main.cpp CPU.o Inst.o
-	$(GCC) $(Flag) CPU.o Error.o Inst.o DS.o Cache.o Mem.o PGT.o TLB.o main.cpp -o CMP.exe
+	$(GCC) $(Flag) CPU.o Error.o Inst.o DS.o Cache.o Mem.o PGT.o TLB.o main.cpp -o CMP
 
 Error.o: Error.cpp Error.h
 	$(GCC) $(Flag) -c Error.cpp -o Error.o
@@ -19,7 +19,7 @@ DS.o: Cache.o Mem.o PGT.o TLB.o DataSystem.cpp DataSystem.h
 Cache.o: Cache.h Cache.cpp
 	$(GCC) $(Flag) -c Cache.cpp -o Cache.o
 
-Mem.o: Memory.cpp Memory.h
+Mem.o: Memory.cpp Memory.h Cache.o
 	$(GCC) $(Flag) -c Memory.cpp -o Mem.o
 
 PGT.o: PGT.h PGT.cpp
@@ -29,7 +29,7 @@ TLB.o: TLB.h TLB.cpp
 	$(GCC) $(Flag) -c TLB.cpp -o TLB.o
 
 run:main
-	CMP.exe
+	./CMP
 
 clean:
-	del *.o CMP.exe *.rpt
+	rm *.o CMP.exe *.rpt

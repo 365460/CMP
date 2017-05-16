@@ -4,14 +4,21 @@
 class TLB
 {
     int entries;
-    int num;
+    int numId;
     int pageSize;
-    int va[100], pa[100], valid[100];
+    int pageOffset;
+    int vpn[100], ppn[100], valid[100];
+    int lastUsed[100];
+    static int timeStamp;
 
 public:
     TLB(int ,int);
     TLB();
 
+    bool getPa(int, int&);
+    void update(int,int);
+
+    void print();
 };
 
 #endif

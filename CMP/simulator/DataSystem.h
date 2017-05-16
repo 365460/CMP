@@ -7,17 +7,28 @@
 
 class DS{
     int disk[300];
-    Memory mem;
-    Cache cache;
-    TLB tlb;
-    PGT pgt;
+    Memory* mem;
+    Cache* cache;
+    TLB* tlb;
+    PGT* pgt;
+
 
 public:
+    int cachehit;
+    int cachemiss;
+
+    int tlbhit;
+    int tlbmiss;
+
+    int pgthit;
+    int pgtmiss;
+
     DS();
-    DS(int data[]);
+    DS(int[],int,int,int,int,int);
 
     int loadData(int);
     int saveData(int,int);
+    void print();
 };
 
 #endif

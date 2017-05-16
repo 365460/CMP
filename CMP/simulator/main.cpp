@@ -4,6 +4,7 @@
 using namespace std;
 
 #include "CPU.h"
+#include "Instruction.h"
 
 int to_Int(char *s){
     int ans = 0, l = strlen(s);
@@ -22,7 +23,8 @@ int main(int argc, char* arg[])
 
     try
     {
-        cpu->initData("iimage.bin", "dimage.bin");
+        // cpu->initData("iimage.bin", "dimage.bin");
+        cpu->initData("../../archiTA/simulator/iimage.bin", "../../archiTA/simulator/dimage.bin");
     }
     catch(Error e)
     {
@@ -30,51 +32,30 @@ int main(int argc, char* arg[])
         return 0;
     }
 
-    cpu->printReport(0);
+    cpu->printSnap(0);
 
     int cycle = 1;
-    for(cycle=1; cycle<=500000; cycle++){
-        cpu->runCycle(cycle);
-        if(cpu->halt) break;
-        // Instruction *nowInst = NULL;
-        // int nowAddress = cpu->PC;
-        // try
-        // {
-        //     nowInst = im->fetch(nowAddress);
-        // }
-        // catch(Error e){
-        //     cout << e.illegal << endl;
-        //     halt = true;
-        //     break;
-        // }
-        //
-        // cpu->PC += 4;
-        // cpu->err.message.clear();
-        // try{
-        //     nowInst->run( cpu );
-        //     if(cpu->err.message.size() == 0 && cpu->err.halt==false)
-        //         cpu->printReport(cycle);
-        //     else
-        //     {
-        //         if(cpu->err.message.size()==0) // jush halt
-        //             halt = true;
-        //         else{
-        //             for(auto i: cpu->err.message)
-        //                 fprintf(ferror, "In cycle %d: %s\n",cycle, i.c_str());
-        //         }
-        //
-        //         if(cpu->err.halt == true) halt = true;
-        //         else cpu->printReport(cycle);
-        //     }
-        // }
-        // catch(Error e){
-        //     printf("illegal instruction found at 0x%X\n", nowAddress);
-        //     halt = true;
-        // }
+    for(cycle=1; cycle<=500000 && cpu->halt==false; cycle++){
+        printf("cycle = %d\n",cycle);
+        Instruction *inst = decode( cpu->fetch() );
+        printf("-------------------\n");
+        printf("     ");
+        inst->run(cpu);
+        if(cpu->err.halt || cpu->halt) break;
+
+        // cpu->instDs->print();
+        cpu->dataDs->print();
+        // inst->print();
+
+        cpu->PC += 4;
+        cpu->printSnap(cycle);
+        cpu->printError(cycle);
+        // cpu->printReport();
+        // fprintf(cpu->freport, "------\n\n");
+        // printf("\n\n");
     }
-    // fclose( fresult );
-    // fclose( ferror );
-    // if(!halt) printf("illegal cycles, over 500,000 cycles\n");
+    cpu->printReport();
+    if(!(cpu->err.halt || cpu->halt)) printf("illegal cycles, over 500,000 cycles\n");
 
     // int n;
     // while(cin>>n){}

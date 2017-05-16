@@ -9,7 +9,7 @@ int ADD(int a,int b,CPU *cpu){
 
     return c;
 }
-int getCode(int code,int a,int b){  // get a to b
+static int getCode(int code,int a,int b){  // get a to b
     int res = 0;
     for(int i=a, j = 0; i<=b; i++,j++) if((code>>i)&1){
         res += (1<<j);
@@ -188,7 +188,8 @@ void Inst_I::run(CPU *cpu){
         if(address%4!=0) cpu->err.addError(DataMisaligned);
         if(cpu->err.halt) return;
 
-        cpu->setReg(rt, cpu->memory[address/4] );
+        int val = cpu->dataDs->loadData( address );
+        cpu->setReg(rt, val );
     }
     else if(opcode==0x21){ // lh
         if(rt==0)  cpu->err.addError(WriteTo0);
@@ -198,7 +199,7 @@ void Inst_I::run(CPU *cpu){
         if(address%2!=0) cpu->err.addError(DataMisaligned);
         if(cpu->err.halt) return;
 
-        int value = cpu->memory[ address/4 ];
+        int value = cpu->dataDs->loadData(address);
         if(address%4==0) value = value>>16; // front
         else value = value << 16 >> 16;
         cpu->setReg(rt, value );
@@ -211,7 +212,7 @@ void Inst_I::run(CPU *cpu){
         if(address%2!=0) cpu->err.addError(DataMisaligned);
         if(cpu->err.halt) return;
 
-        int value = cpu->memory[ address/4 ];
+        int value = cpu->dataDs->loadData(address);
         if(address%4==0) value = (unsigned)value>>16; // front
         else value = (unsigned)value << 16 >> 16;
         cpu->setReg(rt, value );
@@ -223,7 +224,7 @@ void Inst_I::run(CPU *cpu){
         if(address>1023) cpu->err.addError(MemAddOverF);
         if(cpu->err.halt) return;
 
-        int value = cpu->memory[address/4];
+        int value = cpu->dataDs->loadData(address);
         if(address%4==0) value = value>>24;
         else if(address%4==1) value = value<<8>>24;
         else if(address%4==2) value = value<<16>>24;
@@ -238,7 +239,7 @@ void Inst_I::run(CPU *cpu){
         if(address>1023) cpu->err.addError(MemAddOverF);
         if(cpu->err.halt) return;
 
-        int value = cpu->memory[address/4];
+        int value = cpu->dataDs->loadData(address);
         if(address%4==0) value = (unsigned)value>>24;
         else if(address%4==1) value = (unsigned)value<<8>>24;
         else if(address%4==2) value = (unsigned)value<<16>>24;
@@ -373,7 +374,8 @@ Inst_S::Inst_S(int code){
 void Inst_S::run(CPU *cpu){
 
     if(opcode == 0x3F){ // halt
-        cpu->err.addError(Halt);
+        cpu->halt = true;
+        printf("halt!!!");
     }
     else throw Error("Unknown instruction");
 }
