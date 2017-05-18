@@ -1,5 +1,6 @@
 #include "DataSystem.h"
 
+extern int bb;
 DS::DS(){}
 
 DS::DS(int data[],int memSize, int pageSize,int cacheSize, int blockSize
@@ -21,24 +22,23 @@ DS::DS(int data[],int memSize, int pageSize,int cacheSize, int blockSize
 
 int DS::loadData(int vaddr){
     int paddr, data;
-    int location;
-    // printf("ask %d\n",vaddr);
-
 
     int debug = false;
+    int debugL = bb;
+    // if(debugL) printf("ask %d\n",vaddr);
     if(tlb->getPa(vaddr, paddr)==true){
-        printf("H ");
+        if(debugL) printf("ITLB ");
         if(debug) printf(" tlb ");
         tlbhit++;
         if(debug) printf("from tlb paddr = %d\n", paddr);
         if(cache->getdata(paddr, data)==true){
-            printf("H X\n");
+            // if(debugL) printf("H X\n");
             if(debug) printf(" cache ");
             cachehit++;
             return data;
         }
         else{ // cache miss
-            printf("M X\n");
+            // if(debugL) printf("M X\n");
             if(debug) printf("cache miss\n" );
             if(debug) printf(" memory ");
             cachemiss++;
@@ -49,18 +49,18 @@ int DS::loadData(int vaddr){
     }
     else{ // tlb miss
         tlbmiss++;
-        printf("M ");
+        if(debugL) printf("DISK ");
         if(pgt->getPa(vaddr, paddr)==true){
             pgthit++;
             tlb->update(vaddr, paddr);
             if(cache->getdata(paddr, data)==true){
-                printf("H H\n");
+                // if(debugL) printf("H H\n");
                 cachehit++;
                 return data;
             }
             else{
                 // updata cache
-                printf("M H\n");
+                // if(debugL) printf("M H\n");
                 cachemiss++;
                 cache->update(paddr, mem);
                 cache->getdata(paddr, data);
@@ -68,7 +68,7 @@ int DS::loadData(int vaddr){
             }
         }
         else{ // page fault
-            printf("M M\n");
+            // if(debugL) printf("DISK ");
             if(debug) printf("page fault\n");
             pgtmiss++;
             cachemiss++;
@@ -97,8 +97,11 @@ int DS::loadData(int vaddr){
     return 0;
 }
 
-int DS::saveData(int vaddr,int val){
-    return 0;
+void DS::saveData(int vaddr,int val){
+    int paddr;
+    tlb->getPa(vaddr, paddr);
+    cache->savedata(paddr, val);
+    mem->savedate(paddr, val);
 }
 
 void DS::print(){

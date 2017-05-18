@@ -6,6 +6,7 @@ using namespace std;
 #include "CPU.h"
 #include "Instruction.h"
 
+int bb = 0;
 int to_Int(char *s){
     int ans = 0, l = strlen(s);
     for(int i=0; i<l; i++){
@@ -36,18 +37,22 @@ int main(int argc, char* arg[])
 
     int cycle = 1;
     for(cycle=1; cycle<=500000 && cpu->halt==false; cycle++){
-        printf("cycle = %d\n",cycle);
+        bb = 0;
         Instruction *inst = decode( cpu->fetch() );
-        printf("-------------------\n");
-        printf("     ");
-        inst->run(cpu);
-        if(cpu->err.halt || cpu->halt) break;
-
-        // cpu->instDs->print();
-        cpu->dataDs->print();
-        // inst->print();
 
         cpu->PC += 4;
+        // printf("-------------------\n");
+        // printf("     ");
+        bb = 0;
+        inst->run(cpu);
+        // printf("\n");
+        if(cpu->err.halt || cpu->halt) break;
+
+        // printf("%d, ",cycle);
+        // inst->print();
+        // cpu->instDs->print();
+        // cpu->dataDs->print();
+
         cpu->printSnap(cycle);
         cpu->printError(cycle);
         // cpu->printReport();

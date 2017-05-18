@@ -254,7 +254,9 @@ void Inst_I::run(CPU *cpu){
         if(cpu->err.halt) return;
 
         unsigned int value = cpu->reg[rt];
-        cpu->memory[address/4] = value;
+        cpu->dataDs->loadData(address);
+        cpu->dataDs->saveData(address, value);
+
     }
     else if(opcode==0x29){ //sh
         unsigned int address = ADD(cpu->reg[rs],C, cpu);
@@ -263,7 +265,7 @@ void Inst_I::run(CPU *cpu){
         if(cpu->err.halt) return;
 
         unsigned int value = cpu->reg[rt] & 0x0000FFFF;
-        unsigned int now = cpu->memory[address/4];
+        unsigned int now = cpu->dataDs->loadData(address);
         if(address%4==0){
             now = now<<16>>16;
             now |= value<<16;
@@ -272,7 +274,7 @@ void Inst_I::run(CPU *cpu){
             now = now>>16<<16;
             now |= value;
         }
-        cpu->memory[address/4] = now;
+        cpu->dataDs->saveData(address, now);
     }
     else if(opcode==0x28){ //sb
         unsigned int address = ADD(cpu->reg[rs],C, cpu);
@@ -280,13 +282,13 @@ void Inst_I::run(CPU *cpu){
         if(cpu->err.halt) return;
 
         unsigned int value = (unsigned) cpu->reg[rt] & 0x000000FF;
-        unsigned int now = cpu->memory[address/4];
+        unsigned int now = cpu->dataDs->loadData(address);
         int index = address%4, start = (4-index-1)*8;
         for(int i=0; i<8; i++, start++){
             if((value>>i)&1 && !((now>>start)&1)) now |= (1<<(start));
             else if( !((value>>i)&1) && (now>>start)&1) now ^= (1<<(start));
         }
-        cpu->memory[address/4] = now;
+        cpu->dataDs->saveData(address, now);
     }
     else if(opcode==0x0F){ //lui
         if(rt==0) cpu->err.addError(WriteTo0);

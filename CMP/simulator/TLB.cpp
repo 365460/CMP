@@ -26,7 +26,7 @@ bool TLB::getPa(int vaddr,int& paddr){
     int debug = false;
     if(debug) printf("tlb get vaddr = %d, pn=%d, off=%d\n",vaddr,pageNumber, offset);
     bool find = false;
-    for(int i=0; i<numId; i++){
+    for(int i=0; i<entries; i++){
         if(valid[i] && vpn[i]==pageNumber){
             paddr =  (ppn[i]<<pageOffset) + offset;
             lastUsed[i] = ++TLB::timeStamp;
@@ -41,15 +41,19 @@ void TLB::update(int vaddr, int paddr){
     int target ;
     int vn = vaddr >> pageOffset;
     int pn = paddr >> pageOffset;
-    if(numId == entries){ // replacement
-        target = 0;
-        for(int i=0; i<numId; i++) if( lastUsed[i] < lastUsed[ target ])
-            target = i;
 
-    }else target = numId++;
+    bool find = false;
+    for(int i=0; i<entries && !find; i++) if(valid[i]==false){
+        target = i;
+        find = true;
+    }
+    if(find==false) target = 0;
+    for(int i=0; !find && i<entries; i++) if( lastUsed[i] < lastUsed[ target ])
+        target = i;
+
 
     /* notic */
-    for(int i=0; i<numId; i++) if(valid[i] &&  ppn[i]==pn)
+    for(int i=0; i<entries; i++) if(valid[i] &&  ppn[i]==pn)
         valid[i] = false;
 
     ppn[ target ] = pn;
@@ -60,7 +64,7 @@ void TLB::update(int vaddr, int paddr){
 
 void TLB::print(){
     cout << "num  = " << numId << endl;
-    for(int i=0; i<numId; i++){
+    for(int i=0; i<11; i++){
         printf("%2d%4d%4d\n",valid[i], vpn[i], ppn[i]);
     }
     cout << endl;

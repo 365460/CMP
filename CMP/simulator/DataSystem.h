@@ -27,7 +27,7 @@ public:
     DS(int[],int,int,int,int,int);
 
     int loadData(int);
-    int saveData(int,int);
+    void saveData(int,int);
     void print();
 };
 

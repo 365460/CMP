@@ -12,11 +12,18 @@ Memory::Memory(int size,int pageSize){
     for(int i=0; i<totalPages; i++) LRU[i] = dirty[i] = 0;
 }
 
-int Memory::getdate(int addr){
+int Memory::getdate(int addr,bool changeLRU){
     int pageid = addr>>pageOffset;
     int dataid = (addr-(pageid<<pageOffset) )>>2;
-    LRU[ pageid ] = ++timeStamp;
+    if(changeLRU) LRU[ pageid ] = ++Memory::timeStamp;
     return mem[pageid].data[ dataid ];
+}
+
+void Memory::savedate(int addr, int val){
+    int pageid = addr>>pageOffset;
+    int dataid = (addr-(pageid<<pageOffset) )>>2;
+    dirty[ pageid ] = true;
+    mem[pageid].data[ dataid ] = val;
 }
 
 // return pa address
@@ -38,23 +45,21 @@ int Memory::update(int addrDisk,int disk[]){
     }else tarPageId = numId++;
 
     dirty[ tarPageId ] = 0;
-    LRU[ tarPageId ] = ++timeStamp;
+    LRU[ tarPageId ] = ++Memory::timeStamp;
     pageIdInDisk[ tarPageId ] = addrDisk>>pageOffset;
     int diskbase = pageIdInDisk[tarPageId]*pageSize;
     for(int i=0; i<(pageSize>>2); i++){
         mem[tarPageId].data[i] = disk[(diskbase>>2)];
         diskbase += 4;
-
-        /* notice */
     }
     return (tarPageId<<pageOffset) + (addrDisk - ((addrDisk>>pageOffset)<<pageOffset));
 }
 
 void Memory::print(){
     for(int i=0; i<numId; i++){
-        printf("Disk addr = %d\n",pageIdInDisk[i]*pageSize);
+        printf("==>         %d: Disk addr = %d, LRU = %d\n",i,pageIdInDisk[i]*pageSize, LRU[i]);
         for(int j=0; j<pageSize/4; j++){
-            printf("%d:%d\n",i*pageSize+j*4, mem[i].data[j]);
+            printf("%d: 0x%8X\n",i*pageSize+j*4, mem[i].data[j]);
         }
     }
 }

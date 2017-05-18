@@ -63,6 +63,7 @@ void Cache::setValid(int addr, bool val){
     }
 
 }
+
 bool Cache::getdata(int addr, int& val){
     int id = getId(addr);
     int tag = getTag(addr);
@@ -85,6 +86,20 @@ bool Cache::getdata(int addr, int& val){
     return find;
 }
 
+void Cache::savedata(int addr, int val){
+    int id = getId(addr);
+    int tag = getTag(addr);
+    int blockdeep = (unsigned)addr<<(32-blockOffset)>>(32-blockOffset);
+    blockdeep>>=2; // cut bytesoffset;
+
+    for(int i=0; i<nWay; i++){
+        if(set[id][i].valid && set[id][i].tag==tag){
+            set[id][i].data[blockdeep] = val;
+        }
+    }
+
+}
+
 void Cache::update(int addr, Memory *mem){
     int id = getId(addr);
     int tag = getTag(addr);
@@ -93,14 +108,20 @@ void Cache::update(int addr, Memory *mem){
     if(debug) printf("cache upadte %d, blockSize=%d\n", addr, blockSize);
     int data[blockDeep];
     for(int i=0; i<(blockSize>>2); i++){
-        data[i] = mem->getdate(base);
+        data[i] = mem->getdate(base,false);
         base += 4;
         if(debug) printf("with data %d\n", data[i]);
     }
     if(debug) printf("\n");
 
     int tar = 0;
-    for(int i=0; i<nWay; i++){
+    bool find = false;
+    // find last index unvalid
+    for(int i=0; i<nWay && !find; i++) if(set[id][i].valid == false){
+        tar = i;
+        find = true;
+    }
+    for(int i=0; find==false && i<nWay; i++){
         if(MRU[id][i]==0){
             MruOneNum[id]++;
             tar = i;
@@ -129,7 +150,7 @@ void Cache::print(){
     for(int i=0; i<entries; i++){
         printf("id = %d: ",i);
         for(int j=0; j<nWay; j++){
-            printf("| %2d, %4d, %4d | ", set[i][j].valid, set[i][j].tag, set[i][j].data[0]);
+            printf("| %2d, %2d, %4d, %4d | ",MRU[i][j], set[i][j].valid, set[i][j].tag, set[i][j].data[0]);
         }
         printf("\n");
     }

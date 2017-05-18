@@ -22,7 +22,8 @@ public:
     int numId; // pageCounter == totalPages --> find vict
     Memory(int,int);
 
-    int getdate(int addr);
+    int getdate(int addr,bool changeLRU=true);
+    void savedate(int ,int);
     int update(int addr,int[]);
     void print();
 };
