@@ -28,8 +28,14 @@ PGT.o: PGT.h PGT.cpp
 TLB.o: TLB.h TLB.cpp
 	$(GCC) $(Flag) -c TLB.cpp -o TLB.o
 
+run1:main
+	./CMP 64 272 8 16 16 4 4 16 4 1
+
+run2:main
+	./CMP 256 256 32 32 16 4 4 16 4 4
+
 run:main
 	./CMP
 
 clean:
-	rm *.o CMP.exe *.rpt
+	rm *.o CMP

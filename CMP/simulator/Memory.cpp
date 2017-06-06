@@ -1,7 +1,6 @@
 #include "Memory.h"
 #include <cmath>
 
-int Memory::timeStamp = 0;
 Memory::Memory(int size,int pageSize){
     this->size = size;
     this->pageSize = pageSize;
@@ -12,10 +11,14 @@ Memory::Memory(int size,int pageSize){
     for(int i=0; i<totalPages; i++) LRU[i] = dirty[i] = 0;
 }
 
-int Memory::getdate(int addr,bool changeLRU){
+void Memory::updateLRU(int addr, int cycle){
+    int pageid = addr>>pageOffset;
+    LRU[ pageid ] = cycle;
+}
+
+int Memory::getdate(int addr){
     int pageid = addr>>pageOffset;
     int dataid = (addr-(pageid<<pageOffset) )>>2;
-    if(changeLRU) LRU[ pageid ] = ++Memory::timeStamp;
     return mem[pageid].data[ dataid ];
 }
 
@@ -45,7 +48,6 @@ int Memory::update(int addrDisk,int disk[]){
     }else tarPageId = numId++;
 
     dirty[ tarPageId ] = 0;
-    LRU[ tarPageId ] = ++Memory::timeStamp;
     pageIdInDisk[ tarPageId ] = addrDisk>>pageOffset;
     int diskbase = pageIdInDisk[tarPageId]*pageSize;
     for(int i=0; i<(pageSize>>2); i++){
@@ -57,9 +59,10 @@ int Memory::update(int addrDisk,int disk[]){
 
 void Memory::print(){
     for(int i=0; i<numId; i++){
-        printf("==>         %d: Disk addr = %d, LRU = %d\n",i,pageIdInDisk[i]*pageSize, LRU[i]);
+        printf("==>         %d: Disk addr = %d, LRU = %d\n",i,pageIdInDisk[i], LRU[i]);
         for(int j=0; j<pageSize/4; j++){
-            printf("%d: 0x%8X\n",i*pageSize+j*4, mem[i].data[j]);
+            // printf("%d: 0x%8X\n",i*pageSize+j*4, mem[i].data[j]);
+            // printf("%d: %d\n",i*pageSize+j*4, mem[i].data[j]);
         }
     }
 }

@@ -1,7 +1,7 @@
 2551, Disk
-2552, DTLB DCache
-2553, DTLB DCache
-2554, DTLB DCache
+2552, DCache  DTLB
+2553, DCache  DTLB
+2554, DCache  DTLB
 2555, Disk
 2556,
 2557, Disk
@@ -50,7 +50,7 @@
 2600, DTLB
 2601, Disk
 2602, Disk
-2603,
+2603, DTLB
 2604, Disk
 2605, Disk
 2606, Disk
@@ -77,12 +77,12 @@
 2627, Disk
 2628, Disk
 2629, Disk
-2630, DTLB DCache
+2630, DCache  DTLB
 2631, Disk
 2632, Disk
 2633, Disk
 2634, Disk
-2635, DTLB DCache
+2635, DCache  DTLB
 2636, Disk
 2637, Disk
 2638, Disk
@@ -102,7 +102,7 @@
 2652, Disk
 2653, Disk
 2654, Disk
-2655, DTLB DCache
+2655, DCache  DTLB
 2656, Disk
 2657, Disk
 2658, Disk
@@ -131,5 +131,5 @@
 2681, Disk
 2682, Disk
 2683, Disk
-2684, Disk 
+2684, Disk
 2685,

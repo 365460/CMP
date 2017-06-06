@@ -14,7 +14,7 @@ class Memory{
     int LRU[300];
     int pageIdInDisk[300];
 
-    static int timeStamp;
+    int timeStamp;
 public:
     int size, pageSize; // bytes
     int pageOffset; // log2(pageSize)
@@ -22,7 +22,8 @@ public:
     int numId; // pageCounter == totalPages --> find vict
     Memory(int,int);
 
-    int getdate(int addr,bool changeLRU=true);
+    int getdate(int addr);
+    void updateLRU(int addr,int cycle);
     void savedate(int ,int);
     int update(int addr,int[]);
     void print();

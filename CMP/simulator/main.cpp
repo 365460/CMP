@@ -24,8 +24,8 @@ int main(int argc, char* arg[])
 
     try
     {
-        // cpu->initData("iimage.bin", "dimage.bin");
-        cpu->initData("../../archiTA/simulator/iimage.bin", "../../archiTA/simulator/dimage.bin");
+        cpu->initData("iimage.bin", "dimage.bin");
+        // cpu->initData("../../archiTA/simulator/iimage.bin", "../../archiTA/simulator/dimage.bin");
     }
     catch(Error e)
     {
@@ -37,27 +37,19 @@ int main(int argc, char* arg[])
 
     int cycle = 1;
     for(cycle=1; cycle<=500000 && cpu->halt==false; cycle++){
+        cpu->cycle = cycle;
         bb = 0;
         Instruction *inst = decode( cpu->fetch() );
 
+        // cout << cycle << ", ";
         cpu->PC += 4;
-        // printf("-------------------\n");
-        // printf("     ");
         bb = 0;
         inst->run(cpu);
         // printf("\n");
-        if(cpu->err.halt || cpu->halt) break;
-
-        // printf("%d, ",cycle);
-        // inst->print();
-        // cpu->instDs->print();
         // cpu->dataDs->print();
 
+        if(cpu->err.halt || cpu->halt) break;
         cpu->printSnap(cycle);
-        cpu->printError(cycle);
-        // cpu->printReport();
-        // fprintf(cpu->freport, "------\n\n");
-        // printf("\n\n");
     }
     cpu->printReport();
     if(!(cpu->err.halt || cpu->halt)) printf("illegal cycles, over 500,000 cycles\n");

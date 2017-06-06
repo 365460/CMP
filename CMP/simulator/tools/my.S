@@ -1,27 +1,22 @@
-main:   lw $0, 0($0)
-
-        lw $a1, 0($0)
-        addi $a0, $0, 83  # deep = 84 ==> (2+1)*84 = 189
-        jal sum
-        addi $s0, $v0, 0
-
-        j end
-
-sum:   addi $sp, $sp, 12
-        sw $ra, -8($sp)
-        sw $a1, -4($sp)
-        sw $a0, 0($sp)
-        slti $t0, $a0, 1
-        beq $t0, $0, L2
-        add $v0, $0, $a1
-        addi $sp, $sp, -12
-        jr $ra
-L2:     addi $a0, $a0, -1
-        jal sum
-        lw $a0, 0($sp)
-        lw $a1, -4($sp)
-        lw $ra, -8($sp)
-        addi $sp, $sp, -12
-        add $v0, $t0, $a0
-        jr $ra
-end: halt
+lb $s0, 1020($0)
+addi $s0, $s0, 1234
+sw $s0, 1020($0)
+sh $s0, 1022($0)
+sb $s0, 1023($0)
+lb $s0, 1023($0)
+lb $s0, 1020($0)
+add $s0, $s0, $s0
+sb $0, 997($0)
+lb $0, 996($0)
+addi $s0, 222
+sw $0, 996($0)
+ls $0, 996($0)
+sh $0, 1006($0)
+lb $0, 1020($0)
+sb $0, 990($0)
+sb $0, 992($0)
+halt
+halt
+halt
+halt
+halt

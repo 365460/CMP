@@ -15,7 +15,7 @@ CPU::CPU(int arg[]){
         report.push_back(i);
         reg[i] = 0;
     }
-    for(int i=0; i<10; i++) cout << arg[i] << " "; cout << endl;
+    // for(int i=0; i<10; i++) cout << arg[i] << " "; cout << endl;
     size[0]      = arg[0], size[1]      = arg[1];
     pageSize[0]  = arg[2], pageSize[1]  = arg[3];
     cacheSize[0] = arg[4], cacheSize[1] = arg[7];
@@ -165,5 +165,5 @@ void CPU::printReport(){
 
 }
 int CPU::fetch(){
-    return instDs->loadData( this->PC );
+    return instDs->loadData( this->PC , cycle);
 }

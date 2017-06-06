@@ -1,7 +1,7 @@
 #include "Cache.h"
 #include <cmath>
 
-static int debug  = false;
+extern int bb;
 static int getCode(int code,int a,int b){  // get a to b
     int res = 0;
     for(int i=a, j = 0; i<=b; i++,j++) if((code>>i)&1){
@@ -36,13 +36,13 @@ Cache::Cache(int totalSize, int blockSize, int nWay){
     this->entriesOffset = log2(entries);
     this->blockDeep = blockSize/4;
 
-    for(int i=0; i<300; i++)
+    for(int i=0; i<=entries; i++)
         for(int j=0; j<300; j++){
             set[i][j].init();
             MRU[i][j] = 0;
         }
 
-    for(int i=0; i<300; i++) MruOneNum[i] = 0;
+    for(int i=0; i<=entries; i++) MruOneNum[i] = 0;
 }
 
 int Cache::getId(int addr){
@@ -70,14 +70,12 @@ bool Cache::getdata(int addr, int& val){
     int blockdeep = (unsigned)addr<<(32-blockOffset)>>(32-blockOffset);
     blockdeep>>=2; // cut bytesoffset;
 
-    if(debug) printf("cache getdata addr = %d, id = %d, tag = %d\n", addr, id, tag);
     bool find = false;
     for(int i=0; i<nWay; i++){
         if(set[id][i].valid && set[id][i].tag == tag){
             find = true;
             val = set[id][i].data[ blockdeep ];
 
-            if(debug) printf("cache find %d\n", val);
             if(MRU[id][i]==0) MruOneNum[id]++;
             MRU[id][i] = 1;
             if(MruOneNum[id]>=nWay) cleanMru(id, i);
@@ -97,43 +95,38 @@ void Cache::savedata(int addr, int val){
             set[id][i].data[blockdeep] = val;
         }
     }
-
 }
 
-void Cache::update(int addr, Memory *mem){
+void Cache::update(int addr, Memory *mem, int cycle){
     int id = getId(addr);
     int tag = getTag(addr);
     int base = (tag<<(blockOffset+entriesOffset))+(id<<blockOffset);
 
-    if(debug) printf("cache upadte %d, blockSize=%d\n", addr, blockSize);
     int data[blockDeep];
     for(int i=0; i<(blockSize>>2); i++){
-        data[i] = mem->getdate(base,false);
+        data[i] = mem->getdate(base);
         base += 4;
-        if(debug) printf("with data %d\n", data[i]);
     }
-    if(debug) printf("\n");
 
     int tar = 0;
     bool find = false;
-    // find last index unvalid
+
     for(int i=0; i<nWay && !find; i++) if(set[id][i].valid == false){
         tar = i;
         find = true;
     }
     for(int i=0; find==false && i<nWay; i++){
         if(MRU[id][i]==0){
-            MruOneNum[id]++;
             tar = i;
-            MRU[id][i] = 1;
-            break;
+            find = true;
         }
     }
-// write back?
     set[id][ tar ].setData(tag, data, blockDeep);
-
-    if(MruOneNum[id]>=nWay)
-        cleanMru(id, tar);
+    //
+    // if(MRU[id][tar]==0) MruOneNum[id] ++;
+    // MRU[id][tar] = 1;
+    // if(MruOneNum[id]>=nWay)
+    //     cleanMru(id, tar);
 }
 
 void Cache::cleanMru(int id,int tar){
@@ -147,6 +140,7 @@ void Cache::cleanMru(int id,int tar){
 }
 
 void Cache::print(){
+    printf("cache %d way\n", nWay);
     for(int i=0; i<entries; i++){
         printf("id = %d: ",i);
         for(int j=0; j<nWay; j++){

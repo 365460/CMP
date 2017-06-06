@@ -17,20 +17,24 @@ void writeWord2File(unsigned int x, FILE *fp){
 }
 int main()
 {
-    FILE *fp = fopen("../dimage.bin", "wb");
+    FILE *fp = fopen("../../../archiTA/simulator/dimage.bin", "wb");
 
-    int num = 3;
+    int num = 16;
     writeWord2File(12, fp);
     writeWord2File(num, fp);
 
+    for(int i=0; i<=60; i+=4)
+    writeWord2File(i, fp); //0
+    // writeWord2File(16, fp);//4
+    // writeWord2File(20, fp);//8
     //01010101 01010101 01010101 01010101
-    writeWord2File(1431655765, fp);
+    // writeWord2File(-4, fp);//12
     //10101010 10101010 10101010 10101010
-    writeWord2File(2863311530, fp);
+    // writeWord2File(-5, fp);//16
     //10101010 10101010 10101010 10101010
-    writeWord2File(2863311530, fp);
+    // writeWord2File(2863311530, fp);
     //10101010 10101010 10101010 10101010
-    writeWord2File(2863311530, fp);
+    // writeWord2File(2863311530, fp);
 
     fclose(fp);
 }

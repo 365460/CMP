@@ -9,14 +9,14 @@ class TLB
     int pageOffset;
     int vpn[100], ppn[100], valid[100];
     int lastUsed[100];
-    static int timeStamp;
+    int timeStamp;
 
 public:
     TLB(int ,int);
     TLB();
 
-    bool getPa(int, int&);
-    void update(int,int);
+    bool getPa(int, int&, int);
+    void update(int,int,int);
 
     void print();
 };

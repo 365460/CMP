@@ -40,7 +40,7 @@ public:
     Cache(int ,int ,int);
     bool getdata(int,int&);
     void savedata(int,int);
-    void update(int,Memory *mem);
+    void update(int,Memory *mem,int cycle);
     void print();
     void setValid(int , bool);
 };

@@ -13,7 +13,7 @@ PGT::PGT(int pageSize)
     this->entries = DiskSize/pageSize;
     numId = 0;
 
-    for(int i=0; i<300; i++){
+    for(int i=0; i<=entries; i++){
         valid[i] = false;
         ppn[i] = vpn[i] = 0;
     }
@@ -22,10 +22,12 @@ PGT::PGT(int pageSize)
 bool PGT::getPa(int vaddr,int& paddr){
     bool find = false;
     int poff = vaddr - ((vaddr>>pageOffset)<<pageOffset);
+
     for(int i=0; i<numId; i++){
-        if(valid[i] && vpn[i]==(vaddr>>pageOffset)){
+        if(valid[i] && vpn[i]==(unsigned)(vaddr>>pageOffset)){
             find = true;
             paddr = (ppn[i]<<pageOffset) + poff;
+            break;
         }
     }
     return find;

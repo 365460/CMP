@@ -188,7 +188,7 @@ void Inst_I::run(CPU *cpu){
         if(address%4!=0) cpu->err.addError(DataMisaligned);
         if(cpu->err.halt) return;
 
-        int val = cpu->dataDs->loadData( address );
+        int val = cpu->dataDs->loadData( address ,cpu->cycle);
         cpu->setReg(rt, val );
     }
     else if(opcode==0x21){ // lh
@@ -199,7 +199,7 @@ void Inst_I::run(CPU *cpu){
         if(address%2!=0) cpu->err.addError(DataMisaligned);
         if(cpu->err.halt) return;
 
-        int value = cpu->dataDs->loadData(address);
+        int value = cpu->dataDs->loadData(address, cpu->cycle);
         if(address%4==0) value = value>>16; // front
         else value = value << 16 >> 16;
         cpu->setReg(rt, value );
@@ -212,7 +212,7 @@ void Inst_I::run(CPU *cpu){
         if(address%2!=0) cpu->err.addError(DataMisaligned);
         if(cpu->err.halt) return;
 
-        int value = cpu->dataDs->loadData(address);
+        int value = cpu->dataDs->loadData(address, cpu->cycle);
         if(address%4==0) value = (unsigned)value>>16; // front
         else value = (unsigned)value << 16 >> 16;
         cpu->setReg(rt, value );
@@ -224,7 +224,7 @@ void Inst_I::run(CPU *cpu){
         if(address>1023) cpu->err.addError(MemAddOverF);
         if(cpu->err.halt) return;
 
-        int value = cpu->dataDs->loadData(address);
+        int value = cpu->dataDs->loadData(address, cpu->cycle);
         if(address%4==0) value = value>>24;
         else if(address%4==1) value = value<<8>>24;
         else if(address%4==2) value = value<<16>>24;
@@ -239,7 +239,7 @@ void Inst_I::run(CPU *cpu){
         if(address>1023) cpu->err.addError(MemAddOverF);
         if(cpu->err.halt) return;
 
-        int value = cpu->dataDs->loadData(address);
+        int value = cpu->dataDs->loadData(address, cpu->cycle);
         if(address%4==0) value = (unsigned)value>>24;
         else if(address%4==1) value = (unsigned)value<<8>>24;
         else if(address%4==2) value = (unsigned)value<<16>>24;
@@ -254,8 +254,8 @@ void Inst_I::run(CPU *cpu){
         if(cpu->err.halt) return;
 
         unsigned int value = cpu->reg[rt];
-        cpu->dataDs->loadData(address);
-        cpu->dataDs->saveData(address, value);
+        cpu->dataDs->loadData(address, cpu->cycle);
+        cpu->dataDs->saveData(address, value, cpu->cycle);
 
     }
     else if(opcode==0x29){ //sh
@@ -265,7 +265,7 @@ void Inst_I::run(CPU *cpu){
         if(cpu->err.halt) return;
 
         unsigned int value = cpu->reg[rt] & 0x0000FFFF;
-        unsigned int now = cpu->dataDs->loadData(address);
+        unsigned int now = cpu->dataDs->loadData(address, cpu->cycle);
         if(address%4==0){
             now = now<<16>>16;
             now |= value<<16;
@@ -274,7 +274,7 @@ void Inst_I::run(CPU *cpu){
             now = now>>16<<16;
             now |= value;
         }
-        cpu->dataDs->saveData(address, now);
+        cpu->dataDs->saveData(address, now, cpu->cycle);
     }
     else if(opcode==0x28){ //sb
         unsigned int address = ADD(cpu->reg[rs],C, cpu);
@@ -282,13 +282,13 @@ void Inst_I::run(CPU *cpu){
         if(cpu->err.halt) return;
 
         unsigned int value = (unsigned) cpu->reg[rt] & 0x000000FF;
-        unsigned int now = cpu->dataDs->loadData(address);
+        unsigned int now = cpu->dataDs->loadData(address, cpu->cycle);
         int index = address%4, start = (4-index-1)*8;
         for(int i=0; i<8; i++, start++){
             if((value>>i)&1 && !((now>>start)&1)) now |= (1<<(start));
             else if( !((value>>i)&1) && (now>>start)&1) now ^= (1<<(start));
         }
-        cpu->dataDs->saveData(address, now);
+        cpu->dataDs->saveData(address, now, cpu->cycle);
     }
     else if(opcode==0x0F){ //lui
         if(rt==0) cpu->err.addError(WriteTo0);
@@ -377,7 +377,6 @@ void Inst_S::run(CPU *cpu){
 
     if(opcode == 0x3F){ // halt
         cpu->halt = true;
-        printf("halt!!!");
     }
     else throw Error("Unknown instruction");
 }

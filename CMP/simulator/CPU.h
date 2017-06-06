@@ -31,6 +31,7 @@ public:
     std::vector<int> report;
     Error err;
     bool halt;
+    int cycle;
 
     CPU(int arg[]);
     ~CPU();

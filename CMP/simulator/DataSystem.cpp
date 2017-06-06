@@ -1,15 +1,14 @@
 #include "DataSystem.h"
 
-extern int bb;
 DS::DS(){}
 
 DS::DS(int data[],int memSize, int pageSize,int cacheSize, int blockSize
     ,int nWay)
 {
-    mem = new Memory(memSize, pageSize);
+    mem   = new Memory(memSize, pageSize);
     cache = new Cache(cacheSize, blockSize, nWay);
-    pgt = new PGT(pageSize);
-    tlb = new TLB((1024/pageSize)/4, pageSize);
+    pgt   = new PGT(pageSize);
+    tlb   = new TLB((1024/pageSize)/4, pageSize);
     cachehit = cachemiss = 0;
     tlbhit = tlbmiss = 0;
     pgthit = pgtmiss = 0;
@@ -20,97 +19,78 @@ DS::DS(int data[],int memSize, int pageSize,int cacheSize, int blockSize
 
 }
 
-int DS::loadData(int vaddr){
+int DS::loadData(int vaddr,int cycle){
     int paddr, data;
 
-    int debug = false;
-    int debugL = bb;
-    // if(debugL) printf("ask %d\n",vaddr);
-    if(tlb->getPa(vaddr, paddr)==true){
-        if(debugL) printf("ITLB ");
-        if(debug) printf(" tlb ");
+    vaddr = (vaddr>>2) << 2;
+    if(tlb->getPa(vaddr, paddr, cycle)==true){ // update tlb LRU
         tlbhit++;
-        if(debug) printf("from tlb paddr = %d\n", paddr);
-        if(cache->getdata(paddr, data)==true){
-            // if(debugL) printf("H X\n");
-            if(debug) printf(" cache ");
+        if(cache->getdata(paddr, data)==true){ // update cache MRU
             cachehit++;
             return data;
         }
         else{ // cache miss
-            // if(debugL) printf("M X\n");
-            if(debug) printf("cache miss\n" );
-            if(debug) printf(" memory ");
             cachemiss++;
-            cache->update(paddr, mem);
+            cache->update(paddr, mem, cycle); // update cache MRU
             cache->getdata(paddr, data);
             return data;
         }
     }
     else{ // tlb miss
         tlbmiss++;
-        if(debugL) printf("DISK ");
         if(pgt->getPa(vaddr, paddr)==true){
             pgthit++;
-            tlb->update(vaddr, paddr);
-            if(cache->getdata(paddr, data)==true){
-                // if(debugL) printf("H H\n");
+            tlb->update(vaddr, paddr, cycle); // update tlb lru
+            mem->updateLRU(paddr, cycle);  // update mem LRU because cache hit/miss
+            if(cache->getdata(paddr, data)==true){ // update cache MRU
                 cachehit++;
                 return data;
             }
             else{
-                // updata cache
-                // if(debugL) printf("M H\n");
                 cachemiss++;
-                cache->update(paddr, mem);
+                cache->update(paddr, mem, cycle);
                 cache->getdata(paddr, data);
                 return data;
             }
         }
         else{ // page fault
-            // if(debugL) printf("DISK ");
-            if(debug) printf("page fault\n");
             pgtmiss++;
             cachemiss++;
-            int paddr = mem->update(vaddr, disk);
+            int paddr = mem->update(vaddr, disk); // return pagenumber
+            mem->updateLRU(paddr, cycle);
+
+            pgt->update(vaddr,paddr);
+            // notic : have to setInvalid before get target id
+            tlb->update(vaddr, paddr, cycle);
+
             int paddrbase = (paddr>>mem->pageOffset)<<mem->pageOffset;
             for(int i=0; i<(mem->pageSize>>2); i++){
                 cache->setValid( paddrbase + i*4, false);
             }
-
-            if(debug) printf("pgt update %d %d\n",vaddr, paddr);
-            pgt->update(vaddr,paddr);
-
-            if(debug) printf("tlb update\n");
-            tlb->update(vaddr, paddr);
-
-            if(debug) printf("cache update\n");
-            cache->update(paddr, mem);
-
-            if(debug) printf("cache get data\n");
+            cache->update(paddr, mem, cycle);
             cache->getdata(paddr, data);
-            if(debug) printf("data = %d\n", data);
             return data;
         }
-
     }
     return 0;
 }
 
-void DS::saveData(int vaddr,int val){
+// any instruction needing writing back has to call loadData first
+void DS::saveData(int vaddr,int val,int cycle){
+    vaddr = (vaddr>>2 ) << 2;
     int paddr;
-    tlb->getPa(vaddr, paddr);
+    tlb->getPa(vaddr, paddr, cycle);
     cache->savedata(paddr, val);
-    mem->savedate(paddr, val);
+    mem->savedate(paddr, val); // write through
 }
 
 void DS::print(){
     printf("memory : \n");
-    mem->print();
+    // mem->print();
 
-    printf("cache : \n");
-    cache->print();
-
+    // printf("cache : \n");
+    // cache->print();
+    //
     printf("Tlb : \n");
     tlb->print();
 

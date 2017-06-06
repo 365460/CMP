@@ -3,6 +3,7 @@
 #include <map>
 #include <stdint.h>
 #include <cstdio>
+#include <bits/stdc++.h>
 using namespace std;
 #define DEGUG 1
 map<string,int> Totype, Tohex;
@@ -144,7 +145,7 @@ void parseI(int code){
     int rs = getCode(code, 21, 25);
     int rt = getCode(code, 16, 20);
     int im = getCode(code,  0, 15);
-    cout << type << " " << rs << " " << rt << " " << im << endl;
+    // cout << type << " " << rs << " " << rt << " " << im << endl;
 }
 void parseR(int code){
     int type = getCode(code,26, 31);
@@ -153,12 +154,12 @@ void parseR(int code){
     int rd = getCode(code, 11, 15);
     int c = getCode(code,  6, 10);
     int fu = getCode(code, 0, 5);
-    cout << type << " " << rs << " " << rt << " " << rd << " " << c << " " << fu << endl;
+    // cout << type << " " << rs << " " << rt << " " << rd << " " << c << " " << fu << endl;
 }
 void parseJ(int code){
     int type = getCode(code, 26, 31);
     int C = getCode(code, 0, 25);
-    cout << type << " " << C << endl;
+    // cout << type << " " << C << endl;
 }
 void init(){
     /* R type*/
@@ -207,18 +208,18 @@ void init(){
 }
 int main()
 {
-    int PC_base = 336, Inst_num = 6;
+    int PC_base = 0, Inst_num = 6;
 
     init();
     // FILE *fp = fopen("../../../archiTA/testcase/open_testcase/fib_dp/fib_dp.S","r");
-    FILE *fp = fopen("my.S","r");
+    FILE *fp = fopen("my3.S","r");
     FILE *fparsed = fopen("parsed.txt","w");
     Inst_num = parse(fparsed, fp);
     fclose(fparsed);
     fclose(fp);
 
     fparsed = fopen("parsed.txt", "r");
-    FILE *fres = fopen("../iimage.bin","wb");
+    FILE *fres = fopen("../../../archiTA/simulator/iimage.bin","wb");
 
     writeWord2File(PC_base, fres);
     writeWord2File(Inst_num, fres);
@@ -231,7 +232,7 @@ int main()
         rs = rt = rd = C = fu = im = "";
         stringstream ss(s2);
         ss>>op;
-        cout << PC_base + id*4 <<  " " ;
+        // cout << PC_base + id*4 <<  " " ;
         if( Totype[op]== 1){ // R
             if(op=="sll" || op=="srl" || op=="sra"){
                 ss >> rd;
@@ -294,7 +295,9 @@ int main()
         }
         else code = 0;
         // printf("%2d %6s 0x%08X  %d\n",id+1,op.c_str(),code,624+id*4);
-        printf("0x%08X\n",code);
+        // printf("0x%08X\n",code);
+        printf("%s",s2);
+        printf("%d\n",code);
         writeWord2File(code, fres);
         id++;
     }
